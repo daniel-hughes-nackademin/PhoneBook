@@ -1,5 +1,7 @@
 package ServerProgram;
 
+import Resources.Buddy;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -15,21 +17,17 @@ public class Server {
                 ServerSocket serverSocket = new ServerSocket(portNr);
                 Socket clientSocket = serverSocket.accept();
 
-                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream());
+                ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream());
         ) {
+            Object inputLine;
+            Buddy outputBuddy;
 
-
-            String inputLine;
-            String outputLine;
-            String serverMessage = "Which buddy do you need information about?";
-
-            out.println(serverMessage);
-            while((inputLine = in.readLine()) != null){
-                outputLine = buddyBase.getBuddyInfo(inputLine);
-                out.println(outputLine + "," + serverMessage);
+            while((inputLine = ois.readObject()) != null){
+                outputBuddy = buddyBase.getBuddy((String)inputLine);
+                oos.writeObject(outputBuddy);
             }
-        } catch (IOException e){
+        } catch (IOException | ClassNotFoundException e){
             e.printStackTrace();
         }
 

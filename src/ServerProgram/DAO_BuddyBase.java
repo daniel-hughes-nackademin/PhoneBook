@@ -1,5 +1,7 @@
 package ServerProgram;
 
+import Resources.Buddy;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,21 +21,16 @@ public class DAO_BuddyBase {
     }
 
 
-    String getBuddyInfo(String input){
-        StringBuilder buddyInfo = new StringBuilder();
+    Buddy getBuddy(String input){
         input.trim();
 
         for (Buddy buddy: buddyList) {
-            if(buddy.name.equalsIgnoreCase(input)){
-                buddyInfo.append("Buddy info:,");
-                buddyInfo.append(buddy.name + ',');
-                buddyInfo.append(buddy.phoneNr + ',');
-                buddyInfo.append(buddy.dateOfBirth + ',');
-                buddyInfo.append(buddy.email);
-                return buddyInfo.toString();
+            if(buddy.getName().equalsIgnoreCase(input)){
+
+                return buddy;
             }
         }
-        return "Buddy \"" + input + "\" is not found in the system!";
+        return null;
 
 
     }

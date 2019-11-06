@@ -1,12 +1,11 @@
 package ClientProgram;
 
-import ServerProgram.DAO_BuddyBase;
+import Resources.Buddy;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.List;
 
 public class Client {
 
@@ -16,23 +15,31 @@ public class Client {
         int portNr = 22222;
 
         try(
-                Socket addressSocket = new Socket(hostName, portNr);
-
-                PrintWriter out = new PrintWriter(addressSocket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(addressSocket.getInputStream()));
+                Socket addressSocket = new Socket(localHost, portNr);
+                ObjectOutputStream oos = new ObjectOutputStream(addressSocket.getOutputStream());
+                ObjectInputStream ois = new ObjectInputStream(addressSocket.getInputStream());
         ) {
-            String fromServer;
-            String fromUser;
-            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
 
-            while ((fromServer = in.readLine()) != null){
-                String[] buddyInfo = fromServer.split(",");
-                for (String line:buddyInfo) {
-                    System.out.println(line);
+
+            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+            boolean running = true;
+
+            while (running){
+                System.out.println("Which Buddy do you need information about?");
+
+                String fromUser = stdIn.readLine();
+
+                if(fromUser != null){
+                    oos.writeObject(fromUser);
                 }
-                    fromUser = stdIn.readLine();
-                if (fromUser != null){
-                    out.println(fromUser);
+
+                Buddy buddy = (Buddy) ois.readObject();
+                if(buddy == null){
+                    System.out.println("The Buddy is not found in the system!");
+                }
+                else{
+                    System.out.println(buddy.getName() + " is born on the date " + buddy.getDateOfBirth() +
+                            ", has the phone number " + buddy.getPhoneNr() + " and the email address " + buddy.getEmail());
                 }
             }
         } catch (UnknownHostException e){
@@ -40,6 +47,8 @@ public class Client {
             System.exit(1);
         } catch (IOException e){
             System.err.println("Could not get I/O for " + hostName);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
     }
 
