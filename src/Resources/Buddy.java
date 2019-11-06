@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class Buddy implements Serializable {
 
-    static final long serialVersionUID = 42L;
+    static final long serialVersionUID = 1L;
     String name;
     String phoneNr;
     String dateOfBirth;

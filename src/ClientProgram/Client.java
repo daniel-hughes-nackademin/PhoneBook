@@ -1,6 +1,8 @@
 package ClientProgram;
 
 import Resources.Buddy;
+import Resources.Intro;
+import Resources.Response;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -14,7 +16,7 @@ public class Client {
         String hostName = "172.20.201.176";
         int portNr = 22222;
 
-        try(
+        try (
                 Socket addressSocket = new Socket(localHost, portNr);
                 ObjectOutputStream oos = new ObjectOutputStream(addressSocket.getOutputStream());
                 ObjectInputStream ois = new ObjectInputStream(addressSocket.getInputStream());
@@ -22,30 +24,39 @@ public class Client {
 
 
             BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
-            boolean running = true;
+            Object fromServer;
 
-            while (running){
-                System.out.println("Which Buddy do you need information about?");
+            if ((fromServer = ois.readObject()) instanceof Intro) {
+                Intro intro = (Intro) fromServer;
+                System.out.println(intro.getMessage());
 
-                String fromUser = stdIn.readLine();
+                boolean running = true;
+                while (running) {
+                    System.out.println("Which Buddy do you need information about?");
 
-                if(fromUser != null){
-                    oos.writeObject(fromUser);
-                }
+                    String fromUser = stdIn.readLine();
 
-                Buddy buddy = (Buddy) ois.readObject();
-                if(buddy == null){
-                    System.out.println("The Buddy is not found in the system!");
-                }
-                else{
-                    System.out.println(buddy.getName() + " is born on the date " + buddy.getDateOfBirth() +
-                            ", has the phone number " + buddy.getPhoneNr() + " and the email address " + buddy.getEmail());
+                    if (fromUser != null) {
+                        oos.writeObject(fromUser);
+                    }
+
+                    if((fromServer = ois.readObject()) instanceof Response){
+                        Response response = (Response) fromServer;
+                        if(response.isFound()){
+                            Buddy buddy = response.getBuddy();
+                            System.out.println(buddy.getName() + " is born on the date " + buddy.getDateOfBirth() +
+                                    ", has the phone number " + buddy.getPhoneNr() + " and the email address " + buddy.getEmail());
+                        }
+                        else {
+                            System.out.println("The Buddy is not found in the system!");
+                        }
+                    }
                 }
             }
-        } catch (UnknownHostException e){
+        } catch (UnknownHostException e) {
             System.err.println("Unknown host: " + hostName);
             System.exit(1);
-        } catch (IOException e){
+        } catch (IOException e) {
             System.err.println("Could not get I/O for " + hostName);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();

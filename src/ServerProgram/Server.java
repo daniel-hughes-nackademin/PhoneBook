@@ -1,6 +1,8 @@
 package ServerProgram;
 
 import Resources.Buddy;
+import Resources.Intro;
+import Resources.Response;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -21,11 +23,19 @@ public class Server {
                 ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream());
         ) {
             Object inputLine;
-            Buddy outputBuddy;
+
+            oos.writeObject(new Intro());
 
             while((inputLine = ois.readObject()) != null){
-                outputBuddy = buddyBase.getBuddy((String)inputLine);
-                oos.writeObject(outputBuddy);
+                Buddy buddy = buddyBase.getBuddy((String)inputLine);
+                Response outputResponse;
+                if(buddy == null){
+                    outputResponse = new Response(buddy, false);
+                }
+                else {
+                    outputResponse = new Response(buddy, true);
+                }
+                oos.writeObject(outputResponse);
             }
         } catch (IOException | ClassNotFoundException e){
             e.printStackTrace();
