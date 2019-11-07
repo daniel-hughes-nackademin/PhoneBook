@@ -1,50 +1,40 @@
 package ServerProgram;
 
-import Resources.Buddy;
-import Resources.Intro;
-import Resources.Response;
-
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
 
-public class Server {
+public class Server implements Runnable{
 
-    DAO_BuddyBase buddyBase = new DAO_BuddyBase();
+    private Socket clientSocket;
+    Thread thread;
 
-    Server(){
-        int portNr = 22222;
+    Server(Socket clientSocket) {
+        try {
+            this.clientSocket = clientSocket;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        thread = new Thread(this);
+        thread.start();
+    }
 
+
+    @Override
+    public void run() {
         try(
-                ServerSocket serverSocket = new ServerSocket(portNr);
-                Socket clientSocket = serverSocket.accept();
-
                 ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream());
                 ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream());
         ) {
-            Object inputLine;
+            Protocol protocol = new Protocol();
 
-            oos.writeObject(new Intro());
+            oos.writeObject(protocol.getObject(null));
+            String inputLine;
 
-            while((inputLine = ois.readObject()) != null){
-                Buddy buddy = buddyBase.getBuddy((String)inputLine);
-                Response outputResponse;
-                if(buddy == null){
-                    outputResponse = new Response(buddy, false);
-                }
-                else {
-                    outputResponse = new Response(buddy, true);
-                }
-                oos.writeObject(outputResponse);
+            while((inputLine = (String)ois.readObject()) != null){
+                oos.writeObject(protocol.getObject(inputLine));
             }
         } catch (IOException | ClassNotFoundException e){
             e.printStackTrace();
         }
-
-    }
-
-    public static void main(String[] args){
-        new Server();
-
     }
 }

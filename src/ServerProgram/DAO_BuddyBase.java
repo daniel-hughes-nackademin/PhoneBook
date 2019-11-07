@@ -22,7 +22,7 @@ public class DAO_BuddyBase {
 
 
     Buddy getBuddy(String input){
-        input.trim();
+        input = input.trim();
 
         for (Buddy buddy: buddyList) {
             if(buddy.getName().equalsIgnoreCase(input)){

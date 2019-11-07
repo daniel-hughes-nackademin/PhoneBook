@@ -6,8 +6,11 @@ public class Intro implements Serializable {
 
     static final long serialVersionUID = 1L;
 
-    String message = "Connection established with server";
+    String message;
 
+    public Intro(String message) {
+        this.message = message;
+    }
 
     public String getMessage() {
         return message;
